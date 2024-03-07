@@ -138,7 +138,7 @@ app.get('/api/Parkings', async (req, res) => {
     const parkingLot = await ParkingLot.findById(parkingLotId);
     
     if (!parkingLot || !parkingLot.isActive) {
-      res.status(400).json({ isSuccess: false, error: { reason: 'Invalid or inactive parkingLotId' } });
+      res.status(400).json({ isSuccess: false, error: { reason: `No car found with color ${color}` } });
       return;
     }
 
@@ -151,6 +151,18 @@ app.get('/api/Parkings', async (req, res) => {
     const response = {
       registrations: registrations.map(({ color, registrationNumber }) => ({ color, registrationNumber }))
     };
+    if(registrations.length==0){
+      res.json({
+
+        "isSuccess": false,
+        "error": {
+        
+        "reason": `No car found with color ${color}`
+        
+        }
+        
+        })
+    }
 
     res.json({ isSuccess: true, response });
   } catch (error) {
@@ -167,15 +179,33 @@ app.get('/api/Slots', async (req, res) => {
       return;
     }
 
-    const slots = await Parking.find({ color, parkingLotId, status: 'LEFT' }, 'slotNumber -_id')
+    let slots = await Parking.find({ color, parkingLotId, status: 'LEFT' }, 'slotNumber -_id')
       .sort({ slotNumber: 1 });
+    let val = [];
+    slots = slots.map((item)=>{
+       let slot = item.slotNumber;
+       item = {"color": `${color}`,
+         "slotNumber": slot              
+      }
+      val.push(item);
+    })
+    
 
     if (slots.length === 0) {
-      res.status(400).json({ isSuccess: false, error: { reason: `No car found with color ${color}` } });
+      res.status(400).json({
+
+        "isSuccess": false,
+        "error": {
+        
+        "reason": "Invalid Color"
+        
+        }
+        
+        });
       return;
     }
 
-    res.json({ isSuccess: true, response: { slots } });
+    res.json({ isSuccess: true, response: { val } });
   } catch (error) {
     res.status(500).json({ isSuccess: false, error: { reason: error.message } });
   }
