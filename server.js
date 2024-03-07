@@ -204,8 +204,9 @@ app.get('/api/Slots', async (req, res) => {
         });
       return;
     }
-
+    else{
     res.json({ isSuccess: true, response: { val } });
+    }
   } catch (error) {
     res.status(500).json({ isSuccess: false, error: { reason: error.message } });
   }
